@@ -79,7 +79,7 @@ library indentation
   hs-source-dirs:      indentation/src
   exposed-modules:
        Happy.Indentation
-  build-depends:       base < 5, array
+  build-depends:       base < 5
 
 library grammar
   import: common-stanza
