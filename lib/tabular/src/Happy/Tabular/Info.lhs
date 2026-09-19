@@ -101,7 +101,7 @@ Produce a file of parser information, useful for debugging the parser.
 >         str "\t"
 >       . showName nt
 >       . str " -> "
->       . interleave " " (map showName toks))
+>       . interleave " " (map showName (map fst toks)))
 >       . str "  (" . shows i . str ")"
 
 >   showStates =
@@ -132,9 +132,9 @@ Produce a file of parser information, useful for debugging the parser.
 >                 str "\t"
 >               . showName nt
 >               . str " -> "
->               . interleave " " (map showName beforeDot)
+>               . interleave " " (map (showName . fst) beforeDot)
 >               . str ". "
->               . interleave " " (map showName afterDot))
+>               . interleave " " (map (showName .fst) afterDot))
 >       . str "   (rule " . shows rule . str ")"
 >       where
 >               Production nt toks _sem _prec = lookupProd rule

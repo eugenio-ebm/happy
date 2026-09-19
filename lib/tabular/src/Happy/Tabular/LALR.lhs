@@ -152,7 +152,7 @@ Generating the closure of a set of LR(1) items
 >                                       new_old_items
 
 >               fn :: Lr1Item -> [Lr1Item]
->               fn (Lr1 rule dot as) = case drop dot lhs of
+>               fn (Lr1 rule dot as) = case drop dot lhsNames of
 >                       (nt:beta) | nt >= firstStartTok && nt <= last_nonterm ->
 >                           let terms = NameSet.delete catchTok $ -- the catch token is always shifted and never reduced (see pop_items)
 >                                       unionNameMap (\a -> first (beta ++ [a])) as
@@ -160,6 +160,7 @@ Generating the closure of a set of LR(1) items
 >                           [ (Lr1 rule' 0 terms) | rule' <- lookupProdsOfName g nt ]
 >                       _ -> []
 >                   where Production _name lhs _ _ = lookupProdNo g rule
+>                         lhsNames = map fst lhs
 
 Subtract the first set of items from the second.
 
@@ -652,5 +653,6 @@ Count the conflicts
 -----------------------------------------------------------------------------
 
 > findRule :: Grammar e -> Int -> Int -> Maybe Name
-> findRule g rule dot = listToMaybe (drop dot lhs)
+> findRule g rule dot = listToMaybe (drop dot lhsNames)
 >     where Production _ lhs _ _ = lookupProdNo g rule
+>           lhsNames = map fst lhs
