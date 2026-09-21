@@ -1,11 +1,15 @@
 > module Happy.Indentation (
 >       IndentRel(..),
 >       LookaheadRel(..),
+>       composeIndentRel,
+>       composeLookaheadRel,
 >       ) where
 
 I will split these into different files later on
 
 There are more relations, but these will do for now
+
+An IndentRel is attached to every symbol on the RHS of a grammar rule.
 
 > data IndentRel
 >       = Eq
@@ -29,4 +33,14 @@ There are more relations, but these will do for now
 > composeIndentRel r Geq = r
 > composeIndentRel (Gt n) (Gt m) = Gt (n + m)
 
-> data LookaheadRel = LookaheadRel IndentRel IndentRel
+A LookaheadRel consists of two relations.
+
+> data LookaheadRel = LookaheadRel IndentRel IndentRel 
+>                   deriving (Eq)
+
+> instance Show LookaheadRel where
+>   show (LookaheadRel parentRel childRel) = "<" ++ show parentRel ++ " " ++ show childRel ++ ">"
+
+> composeLookaheadRel :: LookaheadRel -> LookaheadRel -> LookaheadRel
+> composeLookaheadRel (LookaheadRel p1 c1) (LookaheadRel p2 c2) =
+>   LookaheadRel (composeIndentRel p1 p2) (composeIndentRel c1 c2)
