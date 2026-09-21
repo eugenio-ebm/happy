@@ -1,8 +1,10 @@
 > module Happy.Indentation (
->       IndentRel(..),
->       LookaheadRel(..),
 >       composeIndentRel,
+>       unionIndentRel,
 >       composeLookaheadRel,
+>       unionLookaheadRel,
+>       IndentRel(..),
+>       LookaheadRel(..)
 >       ) where
 
 I will split these into different files later on
@@ -13,7 +15,7 @@ An IndentRel is attached to every symbol on the RHS of a grammar rule.
 
 > data IndentRel
 >       = Eq
->       | Geq
+>       | Geq -- TODO add a (Geq n)
 >       | Gt Int
 >       | Splash
 >       deriving (Eq)
@@ -33,6 +35,19 @@ An IndentRel is attached to every symbol on the RHS of a grammar rule.
 > composeIndentRel r Geq = r
 > composeIndentRel (Gt n) (Gt m) = Gt (n + m)
 
+> unionIndentRel :: IndentRel -> IndentRel -> IndentRel
+> unionIndentRel Splash _ = Splash
+> unionIndentRel _ Splash = Splash
+> unionIndentRel Eq Eq = Eq
+> unionIndentRel Eq Geq = Geq
+> unionIndentRel Eq (Gt _) = Geq -- TODO factor in Gt n
+> unionIndentRel Geq Eq = Geq
+> unionIndentRel Geq Geq = Geq
+> unionIndentRel Geq (Gt n) = Gt n
+> unionIndentRel (Gt _) Eq = Geq -- TODO factor in Gt n
+> unionIndentRel (Gt n) Geq = Gt n
+> unionIndentRel (Gt n) (Gt m) = Gt (min n m)
+
 A LookaheadRel consists of two relations.
 
 > data LookaheadRel = LookaheadRel IndentRel IndentRel 
@@ -44,3 +59,7 @@ A LookaheadRel consists of two relations.
 > composeLookaheadRel :: LookaheadRel -> LookaheadRel -> LookaheadRel
 > composeLookaheadRel (LookaheadRel p1 c1) (LookaheadRel p2 c2) =
 >   LookaheadRel (composeIndentRel p1 p2) (composeIndentRel c1 c2)
+
+> unionLookaheadRel :: LookaheadRel -> LookaheadRel -> LookaheadRel
+> unionLookaheadRel (LookaheadRel p1 c1) (LookaheadRel p2 c2) =
+>   LookaheadRel (unionIndentRel p1 p2) (unionIndentRel c1 c2)
