@@ -12,7 +12,13 @@ There are more relations, but these will do for now
 >       | Geq
 >       | Gt Int
 >       | Splash
->       deriving (Eq, Show)
+>       deriving (Eq)
+
+> instance Show IndentRel where
+>   show Eq = "="
+>   show Geq = ">="
+>   show (Gt n) = concat (replicate n ">")
+>   show Splash = "*"
 
 > composeIndentRel :: IndentRel -> IndentRel -> IndentRel
 > composeIndentRel Splash _ = Splash

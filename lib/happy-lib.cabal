@@ -132,7 +132,7 @@ library tabular
   -- end of workaround. Delete the workaround and use the bash script posted at
   -- https://github.com/haskell/happy/issues/328#issuecomment-2597598320
   -- to test whether the workaround is still needed.
-  build-depends:       base < 5, array, containers, grammar
+  build-depends:       base < 5, array, containers, grammar, indentation
 
 
 library backend-lalr
