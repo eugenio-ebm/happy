@@ -42,6 +42,9 @@ Generation of LALR parsing tables.
 > unionNameMap :: (Name -> NameSet) -> NameSet -> NameSet
 > unionNameMap f = NameSet.foldr (NameSet.union . f) NameSet.empty
 
+> unionLookaheadMap :: ((Name, LookaheadRel) -> Map Name LookaheadRel) -> Map Name LookaheadRel -> Map Name LookaheadRel
+> unionLookaheadMap f = Map.foldrWithKey (\s rel -> Map.unionWith unionLookaheadRel (f (s, rel))) Map.empty
+
 -----------------------------------------------------------------------------
 
 This means rule $a$, with dot at $b$ (all starting at 0)
@@ -147,7 +150,7 @@ using a memo table so that no work is repeated.
 -----------------------------------------------------------------------------
 Generating the closure of a set of LR(1) items
 
-> closure1 :: Grammar e -> ([Name] -> NameSet) -> [Lr1Item] -> [Lr1Item]
+> closure1 :: Grammar e -> ([(Name, LookaheadRel)] -> Map Name LookaheadRel) -> [Lr1Item] -> [Lr1Item]
 > closure1 g first set
 >       = fst (mkClosure (\(_,new) _ -> null new) addItems ([],set))
 >       where
@@ -162,16 +165,15 @@ Generating the closure of a set of LR(1) items
 >                                       new_old_items
 
 >               fn :: Lr1Item -> [Lr1Item]
->               fn (Lr1 rule dot as) = case drop dot lhsNames of
->                       (nt:beta) | nt >= firstStartTok && nt <= last_nonterm ->
->                           let terms = NameSet.delete catchTok $ -- the catch token is always shifted and never reduced (see pop_items)
->                                       unionNameMap (\a -> first (beta ++ [a])) (lookaheadToNameSet as)
->                               terms' = nameSetToLookahead terms
+>               fn (Lr1 rule dot as) = case drop dot lhs of
+>                       ((nt,parentRel):beta) | nt >= firstStartTok && nt <= last_nonterm ->
+>                           let beta' = [ (b, LookaheadRel parentRel rel) | (b, rel) <- beta ]
+>                               terms = Map.delete catchTok $ -- the catch token is always shifted and never reduced (see pop_items)
+>                                       unionLookaheadMap (\a -> first (beta' ++ [a])) as
 >                           in
->                           [ (Lr1 rule' 0 terms') | rule' <- lookupProdsOfName g nt ]
+>                           [ (Lr1 rule' 0 terms) | rule' <- lookupProdsOfName g nt ]
 >                       _ -> []
 >                   where Production _name lhs _ _ = lookupProdNo g rule
->                         lhsNames = map fst lhs
 
 Subtract the first set of items from the second.
 
@@ -191,7 +193,7 @@ Stamp on overloading with judicious use of type signatures...
 >               EQ -> case compare dot' dot of
 >                       LT -> i : result
 >                       GT -> carry_on
->                       EQ -> case Map.difference as' as of -- TODO
+>                       EQ -> case Map.difference as' as of -- TODO figure out how to do difference on LookaheadRel
 >                               bs | Map.null bs -> result
 >                                  | otherwise -> (Lr1 rule dot bs) : result
 >  where
@@ -209,7 +211,7 @@ Union two sets of items.
 >               EQ -> case compare dot dot' of
 >                       LT -> drop_i
 >                       GT -> drop_i'
->                       EQ -> (Lr1 rule dot (as `Map.union` as')) : union_items is is' -- TODO
+>                       EQ -> (Lr1 rule dot (Map.unionWith unionLookaheadRel as as')) : union_items is is'
 >  where
 >       drop_i  = i  : union_items is (i':is')
 >       drop_i' = i' : union_items (i:is) is'
@@ -321,7 +323,7 @@ calcLookaheads pass.
 > propLookaheads
 >       :: Grammar e
 >       -> [ItemSetWithGotos]                   -- ^ LR(0) kernel sets
->       -> ([Name] -> NameSet)                  -- ^ First function
+>       -> ([(Name, LookaheadRel)] -> Map Name LookaheadRel)                  -- ^ First function
 >       -> (
 >               [(Int, Lr0Item, NameSet)],      -- spontaneous lookaheads
 >               Array Int [(Lr0Item, Int, Lr0Item)]     -- propagated lookaheads
@@ -514,7 +516,7 @@ Generating the goto table doesn't need lookahead info.
 -----------------------------------------------------------------------------
 Generate the action table
 
-> genActionTable :: Grammar e -> ([Name] -> NameSet) ->
+> genActionTable :: Grammar e -> ([(Name, LookaheadRel)] -> Map Name LookaheadRel) ->
 >                [Lr1State] -> ActionTable
 > genActionTable g first sets = actionTable
 >   where
