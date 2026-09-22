@@ -18,13 +18,7 @@ An IndentRel is attached to every symbol on the RHS of a grammar rule.
 >       | Geq -- TODO add a (Geq n)
 >       | Gt Int
 >       | Splash
->       deriving (Eq)
-
-> instance Show IndentRel where
->   show Eq = "="
->   show Geq = ">="
->   show (Gt n) = concat (replicate n ">")
->   show Splash = "*"
+>       deriving (Eq, Show)
 
 > composeIndentRel :: IndentRel -> IndentRel -> IndentRel
 > composeIndentRel Splash _ = Splash
@@ -51,10 +45,7 @@ An IndentRel is attached to every symbol on the RHS of a grammar rule.
 A LookaheadRel consists of two relations.
 
 > data LookaheadRel = LookaheadRel IndentRel IndentRel 
->                   deriving (Eq)
-
-> instance Show LookaheadRel where
->   show (LookaheadRel parentRel childRel) = "<" ++ show parentRel ++ " " ++ show childRel ++ ">"
+>                   deriving (Eq, Show)
 
 > composeLookaheadRel :: LookaheadRel -> LookaheadRel -> LookaheadRel
 > composeLookaheadRel (LookaheadRel p1 c1) (LookaheadRel p2 c2) =
