@@ -21,7 +21,7 @@
 >   Tables {
 >     lr0items         :: [ItemSetWithGotos],
 >     la_spont         :: [(Int, Lr0Item, Map Name LookaheadRel)],
->     la_prop          :: Array Int [(Lr0Item, Int, Lr0Item)],
+>     la_prop          :: Array Int [(Lr0Item, Int, Lr0Item, IndentRel)],
 >     lookaheads       :: Array Int [(Lr0Item, Map Name LookaheadRel)],
 >     lr1items         :: [ ([Lr1Item], [(Name,Int)]) ],
 >     gotoTable        :: GotoTable,

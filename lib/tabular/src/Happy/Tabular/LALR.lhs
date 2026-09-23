@@ -166,10 +166,11 @@ Generating the closure of a set of LR(1) items
 
 >               fn :: Lr1Item -> [Lr1Item]
 >               fn (Lr1 rule dot as) = case drop dot lhs of
->                       ((nt,parentRel):beta) | nt >= firstStartTok && nt <= last_nonterm ->
->                           let beta' = [ (b, LookaheadRel parentRel rel) | (b, rel) <- beta ]
+>                       ((nt,ntRel):beta) | nt >= firstStartTok && nt <= last_nonterm ->
+>                           let beta' = [ (b, LookaheadRel ntRel rel) | (b, rel) <- beta ]
+>                               as' = Map.map (composeLookaheadParentRel ntRel) as
 >                               terms = Map.delete catchTok $ -- the catch token is always shifted and never reduced (see pop_items)
->                                       unionLookaheadMap (\a -> first (beta' ++ [a])) as
+>                                       unionLookaheadMap (\a -> first (beta' ++ [a])) as'
 >                           in
 >                           [ (Lr1 rule' 0 terms) | rule' <- lookupProdsOfName g nt ]
 >                       _ -> []
@@ -326,7 +327,7 @@ calcLookaheads pass.
 >       -> ([(Name, LookaheadRel)] -> Map Name LookaheadRel)                  -- ^ First function
 >       -> (
 >               [(Int, Lr0Item, Map Name LookaheadRel)],      -- spontaneous lookaheads
->               Array Int [(Lr0Item, Int, Lr0Item)]     -- propagated lookaheads
+>               Array Int [(Lr0Item, Int, Lr0Item, IndentRel)]     -- propagated lookaheads
 >          )
 
 > propLookaheads gram sets first = (concat s, array (0,length sets - 1)
@@ -335,7 +336,7 @@ calcLookaheads pass.
 
 >     (s,p) = unzip (zipWith propLASet sets [0..])
 
->     propLASet :: (Set Lr0Item, [(Name, Int)]) -> Int -> ([(Int, Lr0Item, Map Name LookaheadRel)],(Int,[(Lr0Item, Int, Lr0Item)]))
+>     propLASet :: (Set Lr0Item, [(Name, Int)]) -> Int -> ([(Int, Lr0Item, Map Name LookaheadRel)],(Int,[(Lr0Item, Int, Lr0Item, IndentRel)]))
 >     propLASet (set,goto) i = (start_spont ++ concat s', (i, concat p'))
 >       where
 
@@ -351,12 +352,12 @@ calcLookaheads pass.
 >                         | (start, (_,_,_,partial)) <-
 >                               zip [0..] start_info]
 
->         propLAItem :: Lr0Item -> ([(Int, Lr0Item, Map Name LookaheadRel)], [(Lr0Item, Int, Lr0Item)])
+>         propLAItem :: Lr0Item -> ([(Int, Lr0Item, Map Name LookaheadRel)], [(Lr0Item, Int, Lr0Item, IndentRel)])
 >         propLAItem item@(Lr0 rule dot) = (spontaneous, propagated)
 >           where
 >               lookupGoto msg x = maybe (error msg) id (lookup x goto)
 
->               j = closure1 gram first [Lr1 rule dot (Map.singleton dummyTok (LookaheadRel Splash Splash))]
+>               j = closure1 gram first [Lr1 rule dot (Map.singleton dummyTok (LookaheadRel Eq Eq))] -- Must be Eq to extract closure1's effect
 
 >               spontaneous :: [(Int, Lr0Item, Map Name LookaheadRel)]
 >               spontaneous = do
@@ -368,14 +369,16 @@ calcLookaheads pass.
 >                                           , Lr0 rule' (dot' + 1)
 >                                           , ts' )
 
->               propagated :: [(Lr0Item, Int, Lr0Item)]
+>               propagated :: [(Lr0Item, Int, Lr0Item, IndentRel)] -- item propagates its lookahead set to item' (with modification rel)
 >               propagated = do
 >                   (Lr1 rule' dot' ts) <- j
->                   guard $ NameSet.member dummyTok (lookaheadToNameSet ts)
+>                   guard $ Map.member dummyTok ts
 >                   maybeToList $ do r <- findRule gram rule' dot'
+>                                    let (LookaheadRel rel _) = ts Map.! dummyTok -- Find what closure1 did to the dummyTok's indentation
 >                                    return ( item
 >                                           , lookupGoto "propagated" r
->                                           , Lr0 rule' (dot' + 1) )
+>                                           , Lr0 rule' (dot' + 1)
+>                                           , rel )
 
 The lookahead for a start rule depends on whether it was declared
 with %name or %partial: a %name parser is assumed to parse the whole
@@ -393,7 +396,7 @@ Special version using a mutable array:
 > calcLookaheads
 >       :: Int                                  -- number of states
 >       -> [(Int, Lr0Item, Map Name LookaheadRel)]            -- spontaneous lookaheads
->       -> Array Int [(Lr0Item, Int, Lr0Item)]  -- propagated lookaheads
+>       -> Array Int [(Lr0Item, Int, Lr0Item, IndentRel)]  -- propagated lookaheads
 >       -> Array Int [(Lr0Item, Map Name LookaheadRel)]
 
 > calcLookaheads n_states spont prop
@@ -408,8 +411,8 @@ Special version using a mutable array:
 >       propagate _   []  = return ()
 >       propagate arr new = do
 >               let
->                  items = [ (i,item'',s) | (j,item,s) <- new,
->                                           (item',i,item'') <- prop ! j,
+>                  items = [ (i,item'',Map.map (composeLookaheadParentRel rel) s) | (j,item,s) <- new,
+>                                           (item',i,item'', rel) <- prop ! j,
 >                                           item == item' ]
 >               new_new <- get_new arr items []
 >               add_lookaheads arr new
