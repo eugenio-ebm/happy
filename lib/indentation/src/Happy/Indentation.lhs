@@ -2,6 +2,8 @@
 >       composeIndentRel,
 >       unionIndentRel,
 >       composeLookaheadRel,
+>       composeLookaheadParentRel,
+>       composeLookaheadChildRel,
 >       unionLookaheadRel,
 >       IndentRel(..),
 >       LookaheadRel(..)
@@ -50,6 +52,14 @@ A LookaheadRel consists of two relations.
 > composeLookaheadRel :: LookaheadRel -> LookaheadRel -> LookaheadRel
 > composeLookaheadRel (LookaheadRel p1 c1) (LookaheadRel p2 c2) =
 >   LookaheadRel (composeIndentRel p1 p2) (composeIndentRel c1 c2)
+
+> composeLookaheadParentRel :: IndentRel -> LookaheadRel -> LookaheadRel
+> composeLookaheadParentRel r (LookaheadRel p c) =
+>   LookaheadRel (composeIndentRel p r) c
+
+> composeLookaheadChildRel :: IndentRel -> LookaheadRel -> LookaheadRel
+> composeLookaheadChildRel r (LookaheadRel p c) =
+>   LookaheadRel p (composeIndentRel c r)
 
 > unionLookaheadRel :: LookaheadRel -> LookaheadRel -> LookaheadRel
 > unionLookaheadRel (LookaheadRel p1 c1) (LookaheadRel p2 c2) =
