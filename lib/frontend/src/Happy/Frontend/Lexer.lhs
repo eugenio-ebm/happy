@@ -66,7 +66,7 @@ The lexer.
 >       | TokComma              -- ,
 >       | TokEq                 -- =
 >       | TokGt                 -- >
->       | TokStar               -- *
+>       | TokStar               -- the * token
 >       deriving (Eq,Ord,Show)
 
 ToDo: proper text instance here, for use in parser error messages.
