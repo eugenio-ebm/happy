@@ -242,11 +242,11 @@ Produce a file of parser information, useful for debugging the parser.
 
 >   showNameWithIndentation :: (Name, IndentRel) -> String -> String
 >   showNameWithIndentation (name, rel)
->       = str "("
+>       = str "["
 >       . showName name
 >       . str ", "
 >       . showIndentRel rel
->       . str ")"
+>       . str "]"
 
 >   showIndentRel :: IndentRel -> String -> String
 >   showIndentRel Eq = str "="
