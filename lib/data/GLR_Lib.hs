@@ -65,7 +65,6 @@ fakeimport DATA
 {- borrowed from GenericTemplate.hs -}
 
 #define ILIT(n) n#
-#define BANG !
 #define IBOX(n) (I# (n))
 #define FAST_INT Int#
 
@@ -406,7 +405,7 @@ merge stks
    | IBOX(st) <- nub (map (\s -> IBOX(top s)) stks)
    , let ch  = concat  [ x | TS st2 _ _ x <- stks, UEQ(st,st2) ]
          ss  = mkss    [ s | TS st2 _ s _ <- stks, UEQ(st,st2) ]
-         (BANG IBOX(id)) = head [ IBOX(i) | TS st2 i _ _ <- stks, UEQ(st,st2) ]
+         !(IBOX(id)) = head [ IBOX(i) | TS st2 i _ _ <- stks, UEQ(st,st2) ]
           -- reuse of id is ok, since merge discards old stacks
    ]
    where
