@@ -60,7 +60,7 @@ This means rule $a$, with dot at $b$ (all starting at 0)
 > type ItemSetWithGotos = (Set Lr0Item, [(Name,Int)])
 
 > data LRAction = LR'Shift Int Priority -- state number and priority
->               | LR'Reduce Int Priority-- rule no and priority
+>               | LR'Reduce Int Priority LookaheadRel -- rule no, priority, and lookahead relation
 >               | LR'Accept             -- :-)
 >               | LR'Fail               -- :-(
 >               | LR'MustFail           -- :-(
@@ -570,7 +570,7 @@ Generate the action table
 >                     [ (startLookahead g partial, LR'Accept{-'-}) ]
 >                  | otherwise
 >                  -> let Production _ _ _ p = lookupProdNo g rule in
->                     NameSet.toAscList (lookaheadToNameSet la) `zip` repeat (LR'Reduce rule p)
+>                     [ (t, LR'Reduce rule p rel) | (t, rel) <- Map.toAscList la ]
 >               _ -> []
 
 >       possActions goto coll = do item <- closure1 g first coll
@@ -609,6 +609,8 @@ NOTE: on (LR'Multiple as a) handling
 >       res x LR'Fail = x
 >       res LR'MustFail _ = LR'MustFail
 >       res _ LR'MustFail = LR'MustFail
+>       res (LR'Reduce r p rel) (LR'Reduce r' p' rel')
+>         | r == r' && p == p' = LR'Reduce r p (unionLookaheadRel rel rel')
 >       res x x' | x == x' = x
 >       res (LR'Accept) _ = LR'Accept
 >       res _ (LR'Accept) = LR'Accept
@@ -633,7 +635,7 @@ NOTE: on (LR'Multiple as a) handling
 >         -- leave cases above to do the appropriate merging
 
 >       res a@(LR'Shift {}) b@(LR'Reduce {}) = res b a
->       res a@(LR'Reduce _ p) b@(LR'Shift _ p')
+>       res a@(LR'Reduce _ p _) b@(LR'Shift _ p')
 >               = case (p,p') of
 >                      (PrioLowest,PrioLowest) -> LR'MustFail
 >                      (_,PrioLowest) -> a
@@ -648,7 +650,7 @@ NOTE: on (LR'Multiple as a) handling
 >                                     LeftAssoc  -> a
 >                                     RightAssoc -> b
 >                                     None       -> LR'MustFail
->       res a@(LR'Reduce r p) b@(LR'Reduce r' p')
+>       res a@(LR'Reduce r p _) b@(LR'Reduce r' p' _)
 >               = case (p,p') of
 >                      (PrioLowest,PrioLowest) ->
 >                        LR'Multiple [a] b      -- give to earlier rule?

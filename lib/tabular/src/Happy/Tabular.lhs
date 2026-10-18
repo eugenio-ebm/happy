@@ -85,12 +85,12 @@ selects what counts as a reduction when calculating used/unused
 
 > select_all_reductions :: SelectReductions
 > select_all_reductions = go
->   where go (LR'Reduce r _)    = [r]
+>   where go (LR'Reduce r _ _)  = [r]
 >         go (LR'Multiple as a) = concatMap go (a : as)
 >         go _                  = []
 
 > select_first_reduction :: SelectReductions
 > select_first_reduction = go
->   where go (LR'Reduce r _)   = [r]
+>   where go (LR'Reduce r _ _) = [r]
 >         go (LR'Multiple _ a) = go a   -- eg R/R conflict
 >         go _                 = []

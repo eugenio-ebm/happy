@@ -838,7 +838,7 @@ vars used in this piece of code.
 
 > actionVal :: LRAction -> Int
 > actionVal (LR'Shift  state _) = state + 1
-> actionVal (LR'Reduce rule _)  = -(rule + 1)
+> actionVal (LR'Reduce rule _ _) = -(rule + 1)
 > actionVal LR'Accept           = -1
 > actionVal (LR'Multiple _ a)   = actionVal a
 > actionVal LR'Fail             = 0
@@ -853,8 +853,8 @@ See notes under "Action Tables" above for some subtleties in this function.
 >   = case act of
 >
 >       -- use error reduction as the default action, if there is one.
->       LR'Reduce _ _                 -> act
->       LR'Multiple _ (LR'Reduce _ _) -> act
+>       LR'Reduce _ _ _                 -> act
+>       LR'Multiple _ (LR'Reduce _ _ _) -> act
 >
 >       -- if the error token is shifted or otherwise, don't generate
 >       -- a default reduction action.  This is *important*!
@@ -883,8 +883,8 @@ See notes under "Action Tables" above for some subtleties in this function.
 >     error_acts = [ act | (e, act) <- actions, e == errorTok ]
 >     catch_acts = [ act | (e, act) <- actions, e == catchTok ]
 >     reduces
->           =  [ act | (_, act@(LR'Reduce _ _)) <- actions ]
->           ++ [ act | (_, LR'Multiple _ act@(LR'Reduce _ _)) <- actions ]
+>           =  [ act | (_, act@(LR'Reduce _ _ _)) <- actions ]
+>           ++ [ act | (_, LR'Multiple _ act@(LR'Reduce _ _ _)) <- actions ]
 
 -----------------------------------------------------------------------------
 -- Generate packed parsing tables.

@@ -170,7 +170,7 @@ Produce a file of parser information, useful for debugging the parser.
 >       = id
 >   showAction (t, act)
 >       = str "\t"
->       . showJName 15 t
+>       . showActionName t (actionLookaheadRelation act)
 >       . showAction' act
 >       . str "\n"
 
@@ -181,7 +181,7 @@ Produce a file of parser information, useful for debugging the parser.
 >       . shows n
 >   showAction' LR'Accept
 >       = str "accept"
->   showAction' (LR'Reduce n _)
+>   showAction' (LR'Reduce n _ _)
 >       = str "reduce using rule "
 >       . shows n
 >   showAction' (LR'Multiple as a)
@@ -191,6 +191,34 @@ Produce a file of parser information, useful for debugging the parser.
 >               (map (\a' -> str "\t\t\t(" . showAction' a' . str ")")
 >                (nub (filter (/= a) as)))
 >   showAction' LR'Fail = error "showAction' LR'Fail: Unhandled case"
+
+>   actionLookaheadRelation (LR'Reduce _ _ rel) = Just rel
+>   actionLookaheadRelation (LR'Multiple as a)
+>       = case concatMap actionLookaheadRelations (a : as) of
+>           [] -> Nothing
+>           rel:rels -> Just (foldl unionLookaheadRel rel rels)
+>   actionLookaheadRelation _ = Nothing
+
+>   actionLookaheadRelations (LR'Reduce _ _ rel) = [rel]
+>   actionLookaheadRelations (LR'Multiple as a) =
+>       concatMap actionLookaheadRelations (a : as)
+>   actionLookaheadRelations _ = []
+
+>   showActionName t Nothing = showJName 15 t
+>   showActionName t (Just rel)
+>       = str . ljustify 15 $ showLookaheadName t rel ""
+
+>   showLookaheadName t rel
+>       = str "["
+>       . showName t
+>       . str ", "
+>       . showLookaheadRelation rel
+>       . str "]"
+
+>   showLookaheadRelation (LookaheadRel parent child)
+>       = showIndentRel parent
+>       . str ", "
+>       . showIndentRel child
 
 >   showGoto (_, NoGoto)
 >       = id

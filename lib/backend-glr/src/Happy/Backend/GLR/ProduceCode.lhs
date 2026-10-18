@@ -321,7 +321,7 @@ It also shares identical reduction values as CAFs
 >   mkAct act
 >    = case act of
 >       LR'Shift newSt _ -> "Shift " ++ show newSt ++ " []"
->       LR'Reduce r    _ -> "Reduce " ++ "[" ++ mkRed r ++ "]"
+>       LR'Reduce r    _ _ -> "Reduce " ++ "[" ++ mkRed r ++ "]"
 >       LR'Accept        -> "Accept"
 >       LR'Multiple rs (LR'Shift st _)
 >                        -> "Shift " ++ show st ++ " " ++ mkReds rs
@@ -329,7 +329,7 @@ It also shares identical reduction values as CAFs
 >                        -> "Reduce " ++ mkReds (r:rs)
 >       _ -> error "writeActionTbl/mkAct: Unhandled case"
 >    where
->     mkReds rs = "[" ++ tail (concat [ "," ++ mkRed r | LR'Reduce r _ <- rs ]) ++ "]"
+>     mkReds rs = "[" ++ tail (concat [ "," ++ mkRed r | LR'Reduce r _ _ <- rs ]) ++ "]"
 
 >   mkRed r = "red_" ++ show r
 >   mkReductions = [ mkRedDefn p
