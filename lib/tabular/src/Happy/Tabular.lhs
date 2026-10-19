@@ -74,7 +74,7 @@ Find unused rules and tokens
 >       unused_rules     = filter (`notElem` used_rules ) [0..n_prods-1]
 
 > is_shift :: LRAction -> Bool
-> is_shift (LR'Shift _ _)             = True
+> is_shift (LR'Shift _ _ _)             = True
 > is_shift (LR'Multiple _ LR'Shift{}) = True
 > is_shift _                          = False
 

@@ -837,7 +837,7 @@ Replace all the $n variables with happy_vars, and return a list of all the
 vars used in this piece of code.
 
 > actionVal :: LRAction -> Int
-> actionVal (LR'Shift  state _) = state + 1
+> actionVal (LR'Shift  state _ _) = state + 1
 > actionVal (LR'Reduce rule _ _) = -(rule + 1)
 > actionVal LR'Accept           = -1
 > actionVal (LR'Multiple _ a)   = actionVal a
@@ -988,7 +988,7 @@ and @check@ as the way to detect "collisions" (i.e., default entries).
 >        shifted_catch_states = -- collect the states in which we have just shifted a catchTok
 >          nub [ to_state | (_from_state, acts) <- assocs action
 >                         , let (_err:catch:_) = assocs acts
->                         , (_tok, LR'Shift to_state _) <- return catch ]
+>                         , (_tok, LR'Shift to_state _ _) <- return catch ]
 >
 >        -- adjust terminals by -(fst_term+2), so they start at 2 (error is 0, catch is 1).
 >        --  (see ARRAY_NOTES)

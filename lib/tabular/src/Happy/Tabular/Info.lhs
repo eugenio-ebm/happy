@@ -176,7 +176,7 @@ Produce a file of parser information, useful for debugging the parser.
 
 >   showAction' LR'MustFail
 >       = str "fail"
->   showAction' (LR'Shift n _)
+>   showAction' (LR'Shift n _ _)
 >       = str "shift, and enter state "
 >       . shows n
 >   showAction' LR'Accept

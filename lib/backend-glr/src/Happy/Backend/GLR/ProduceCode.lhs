@@ -320,10 +320,10 @@ It also shares identical reduction values as CAFs
 >     getTok = toGSym gsMap symInt
 >   mkAct act
 >    = case act of
->       LR'Shift newSt _ -> "Shift " ++ show newSt ++ " []"
+>       LR'Shift newSt _ _ -> "Shift " ++ show newSt ++ " []"
 >       LR'Reduce r    _ _ -> "Reduce " ++ "[" ++ mkRed r ++ "]"
 >       LR'Accept        -> "Accept"
->       LR'Multiple rs (LR'Shift st _)
+>       LR'Multiple rs (LR'Shift st _ _)
 >                        -> "Shift " ++ show st ++ " " ++ mkReds rs
 >       LR'Multiple rs r@(LR'Reduce{})
 >                        -> "Reduce " ++ mkReds (r:rs)

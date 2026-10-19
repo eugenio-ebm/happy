@@ -59,7 +59,7 @@ This means rule $a$, with dot at $b$ (all starting at 0)
 
 > type ItemSetWithGotos = (Set Lr0Item, [(Name,Int)])
 
-> data LRAction = LR'Shift Int Priority -- state number and priority
+> data LRAction = LR'Shift Int Priority LookaheadRel -- state number, priority, and lookahead relation
 >               | LR'Reduce Int Priority LookaheadRel -- rule no, priority, and lookahead relation
 >               | LR'Accept             -- :-)
 >               | LR'Fail               -- :-(
@@ -561,7 +561,8 @@ Generate the action table
 >       possAction goto _set (Lr1 rule pos la) =
 >          case findRule g rule pos of
 >               Just t | t >= fst_term || t == errorTok || t == catchTok ->
->                       let f j = (t,LR'Shift j p)
+>                       let f j = (t,LR'Shift j p rel)
+>                           rel = la Map.! t
 >                           p = maybe No id (lookup t prios)
 >                       in map f $ maybeToList (lookup t goto)
 >               Nothing
@@ -635,7 +636,7 @@ NOTE: on (LR'Multiple as a) handling
 >         -- leave cases above to do the appropriate merging
 
 >       res a@(LR'Shift {}) b@(LR'Reduce {}) = res b a
->       res a@(LR'Reduce _ p _) b@(LR'Shift _ p')
+>       res a@(LR'Reduce _ p _) b@(LR'Shift _ p' _)
 >               = case (p,p') of
 >                      (PrioLowest,PrioLowest) -> LR'MustFail
 >                      (_,PrioLowest) -> a
