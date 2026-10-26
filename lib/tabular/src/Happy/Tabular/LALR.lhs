@@ -561,8 +561,7 @@ Generate the action table
 >       possAction goto _set (Lr1 rule pos la) =
 >          case findRule g rule pos of
 >               Just t | t >= fst_term || t == errorTok || t == catchTok ->
->                       let f j = (t,LR'Shift j p rel)
->                           rel = la Map.! t
+>                       let f j = (t,LR'Shift j p (shiftLookaheadRel rule pos t))
 >                           p = maybe No id (lookup t prios)
 >                       in map f $ maybeToList (lookup t goto)
 >               Nothing
@@ -576,6 +575,14 @@ Generate the action table
 
 >       possActions goto coll = do item <- closure1 g first coll
 >                                  possAction goto coll item
+
+>       shiftLookaheadRel rule pos t =
+>         case drop pos rhs of
+>           ((a, rel):_) | a == t -> LookaheadRel Eq rel
+>           [] -> error "genActionTable: shift position is past the production"
+>           _ -> error "genActionTable: shift item not found"
+>         where
+>           Production _ rhs _ _ = lookupProdNo g rule
 
 These comments are now out of date! /JS
 
