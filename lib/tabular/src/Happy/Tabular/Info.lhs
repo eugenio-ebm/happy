@@ -192,6 +192,7 @@ Produce a file of parser information, useful for debugging the parser.
 >                (nub (filter (/= a) as)))
 >   showAction' LR'Fail = error "showAction' LR'Fail: Unhandled case"
 
+>   actionLookaheadRelation (LR'Shift _ _ rel) = Just rel
 >   actionLookaheadRelation (LR'Reduce _ _ rel) = Just rel
 >   actionLookaheadRelation (LR'Multiple as a)
 >       = case concatMap actionLookaheadRelations (a : as) of
@@ -199,6 +200,7 @@ Produce a file of parser information, useful for debugging the parser.
 >           rel:rels -> Just (foldl unionLookaheadRel rel rels)
 >   actionLookaheadRelation _ = Nothing
 
+>   actionLookaheadRelations (LR'Shift _ _ rel) = [rel]
 >   actionLookaheadRelations (LR'Reduce _ _ rel) = [rel]
 >   actionLookaheadRelations (LR'Multiple as a) =
 >       concatMap actionLookaheadRelations (a : as)
