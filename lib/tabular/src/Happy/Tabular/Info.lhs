@@ -145,13 +145,13 @@ Produce a file of parser information, useful for debugging the parser.
 >       . interleave "\n\t\t" (map showLookahead (Map.toAscList las))
 >       where
 >       showLookahead (a, (LookaheadRel p c))
->           = str "("
+>           = str "["
 >           . showIndentRel p
 >           . str ", "
 >           . showIndentRel c
 >           . str ", "
 >           . showName a
->           . str ")"
+>           . str "]"
 
 >   showItem (Lr0 rule dot)
 >       = ljuststr 50 (
