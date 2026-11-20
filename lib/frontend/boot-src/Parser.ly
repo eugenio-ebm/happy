@@ -51,6 +51,7 @@ The parser.
 >       "]"             { TokenKW      TokBraceR }
 >       ","             { TokenKW      TokComma }
 >       "="             { TokenKW      TokEq }
+>       ">="            { TokenKW      TokGeq }
 >       ">"             { TokenKW      TokGt }
 >       "*"             { TokenKW      TokStar }
 
@@ -100,6 +101,7 @@ The parser.
 
 > ann :: { IndentAnn }
 >       : "="                            { Eq }
+>       | ">="                           { Geq }
 >       | ">"                            { Gt }
 >       | "*"                            { Any }
 

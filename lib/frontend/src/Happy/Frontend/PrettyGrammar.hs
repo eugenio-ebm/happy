@@ -43,6 +43,7 @@ ppTerm (App x ts) = text x <> ppTuple (map ppTerm ts)
 
 ppIndentAnn :: IndentAnn -> Doc
 ppIndentAnn Eq = text "="
+ppIndentAnn Geq = text ">="
 ppIndentAnn Gt = text ">"
 ppIndentAnn Any = text "*"
 ppIndentAnn NoAnn = text "?"

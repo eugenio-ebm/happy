@@ -25,6 +25,7 @@ Here is the abstract syntax of the language we parse.
 
 > data IndentAnn
 >     = Eq
+>     | Geq
 >     | Gt
 >     | Any
 >     | NoAnn

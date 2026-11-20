@@ -15,7 +15,7 @@ module Main where
 S : [A, >] [A, >]     { S $1 $2 }
 
 A : ['a', =] [A, >]   { Aa $2 }
-  | ['b', >]          { Ab }
+  | ['b', >=]         { Ab }
 
 {
 data S = S A A

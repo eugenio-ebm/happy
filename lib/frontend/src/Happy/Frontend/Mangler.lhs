@@ -163,6 +163,7 @@ Translate the rules from string to name-based.
 
 >       annToRel :: (Name, IndentAnn) -> (Name, I.IndentRel)
 >       annToRel (n, Eq) = (n, I.Eq)
+>       annToRel (n, Geq) = (n, I.Geq)
 >       annToRel (n, Gt) = (n, I.Gt 1)
 >       annToRel (n, Any) = (n, I.Any)
 >       annToRel (n, NoAnn) = (n, if n `elem` terminal_names then I.Gt 1 else I.Eq)

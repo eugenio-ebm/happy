@@ -65,6 +65,7 @@ The lexer.
 >       | TokBraceR             -- ]
 >       | TokComma              -- ,
 >       | TokEq                 -- =
+>       | TokGeq                -- >=
 >       | TokGt                 -- >
 >       | TokStar               -- the * token
 >       deriving (Eq,Ord,Show)
@@ -102,7 +103,7 @@ ToDo: proper text instance here, for use in parser error messages.
 >       ']'     -> cont (TokenKW TokBraceR)
 
 >       '='     -> cont (TokenKW TokEq)
->       '>'     -> cont (TokenKW TokGt)
+>       '>'     -> lexGt cont
 >       '*'     -> cont (TokenKW TokStar)
 
 >       _
@@ -163,6 +164,10 @@ followed by a special identifier.
 > lexColon :: (Token -> Pfunc a) -> [Char] -> Int -> ParseResult a
 > lexColon cont (':':rest) = cont (TokenKW TokDoubleColon) rest
 > lexColon cont rest       = cont (TokenKW TokColon) rest
+
+> lexGt :: (Token -> Pfunc a) -> [Char] -> Int -> ParseResult a
+> lexGt cont ('=':rest) = cont (TokenKW TokGeq) rest
+> lexGt cont rest       = cont (TokenKW TokGt) rest
 
 > lexId :: (Token -> Pfunc a) -> Char -> String -> Int -> ParseResult a
 > lexId cont c rest =

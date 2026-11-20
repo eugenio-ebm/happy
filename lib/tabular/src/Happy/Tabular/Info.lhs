@@ -144,14 +144,8 @@ Produce a file of parser information, useful for debugging the parser.
 >       . str "\n\t\t"
 >       . interleave "\n\t\t" (map showLookahead (Map.toAscList las))
 >       where
->       showLookahead (a, (LookaheadRel p c))
->           = str "["
->           . showIndentRel p
->           . str ", "
->           . showIndentRel c
->           . str ", "
->           . showName a
->           . str "]"
+>       showLookahead (a, rel)
+>           = showLookaheadName a rel
 
 >   showItem (Lr0 rule dot)
 >       = ljuststr 50 (
@@ -169,10 +163,18 @@ Produce a file of parser information, useful for debugging the parser.
 >   showAction (_, LR'Fail)
 >       = id
 >   showAction (t, act)
+>       = foldr (.) id (map (showActionEntry t) (actionCandidates act))
+>
+>   showActionEntry t act
 >       = str "\t"
 >       . showActionName t (actionLookaheadRelation act)
 >       . showAction' act
 >       . str "\n"
+>
+>   actionCandidates (LR'Multiple as a)
+>       = nub (concatMap actionCandidates (a : as))
+>   actionCandidates act
+>       = [act]
 
 >   showAction' LR'MustFail
 >       = str "fail"
@@ -194,33 +196,20 @@ Produce a file of parser information, useful for debugging the parser.
 
 >   actionLookaheadRelation (LR'Shift _ _ rel) = Just rel
 >   actionLookaheadRelation (LR'Reduce _ _ rel) = Just rel
->   actionLookaheadRelation (LR'Multiple as a)
->       = case concatMap actionLookaheadRelations (a : as) of
->           [] -> Nothing
->           rel:rels -> Just (foldl unionLookaheadRel rel rels)
 >   actionLookaheadRelation _ = Nothing
-
->   actionLookaheadRelations (LR'Shift _ _ rel) = [rel]
->   actionLookaheadRelations (LR'Reduce _ _ rel) = [rel]
->   actionLookaheadRelations (LR'Multiple as a) =
->       concatMap actionLookaheadRelations (a : as)
->   actionLookaheadRelations _ = []
 
 >   showActionName t Nothing = showJName 15 t
 >   showActionName t (Just rel)
 >       = str . ljustify 15 $ showLookaheadName t rel ""
 
->   showLookaheadName t rel
+>   showLookaheadName t (LookaheadRel parent child)
 >       = str "["
 >       . showName t
 >       . str ", "
->       . showLookaheadRelation rel
->       . str "]"
-
->   showLookaheadRelation (LookaheadRel parent child)
->       = showIndentRel parent
+>       . showIndentRel parent
 >       . str ", "
 >       . showIndentRel child
+>       . str "]"
 
 >   showGoto (_, NoGoto)
 >       = id
